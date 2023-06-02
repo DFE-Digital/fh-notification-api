@@ -1,5 +1,8 @@
-﻿using FamilyHubs.Notification.Core.Interfaces.Commands;
+﻿using AutoMapper;
+using FamilyHubs.Notification.Core.Interfaces.Commands;
+using FamilyHubs.Notification.Data.Entities;
 using FamilyHubs.Notification.Data.NotificationServices;
+using FamilyHubs.Notification.Data.Repository;
 using FamilyHubs.Notification.Data.Shared;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -18,11 +21,15 @@ public class CreateNotificationCommand : IRequest<bool>, ICreateNotificationComm
 
 public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificationCommand, bool>
 {
+    private readonly ApplicationDbContext _context;
+    private readonly IMapper _mapper;
     private readonly IEmailSender _emailSender;
     private readonly ILogger<CreateNotificationCommandHandler> _logger;
 
-    public CreateNotificationCommandHandler(IEmailSender emailSender, ILogger<CreateNotificationCommandHandler> logger)
+    public CreateNotificationCommandHandler(ApplicationDbContext context, IMapper mapper, IEmailSender emailSender, ILogger<CreateNotificationCommandHandler> logger)
     {
+        _context = context;
+        _mapper = mapper;
         _emailSender = emailSender;
         _logger = logger;
 
@@ -32,6 +39,14 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
         try
         {
             await _emailSender.SendEmailAsync(request.MessageDto);
+
+            var sentNotification = _mapper.Map<SentNotification>(request.MessageDto);
+            if (sentNotification != null) 
+            {
+                _context.SentNotifications.Add(sentNotification);
+                await _context.SaveChangesAsync();
+            }
+
             return true;
 
         }

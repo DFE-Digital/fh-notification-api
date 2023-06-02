@@ -2,9 +2,11 @@
 
 public record MessageDto
 {
+    public long Id { get; set; }
     public required string RecipientEmail { get; set; }
-    public string TemplateId { get; set; } = default!;
+    public required string TemplateId { get; set; }
     public Dictionary<string, string> TemplateTokens { get; set; } = new Dictionary<string, string>();
+    public DateTime? Created { get; set; }
 
     public override int GetHashCode()
     {

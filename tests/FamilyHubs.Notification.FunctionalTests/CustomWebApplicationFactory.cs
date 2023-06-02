@@ -1,4 +1,5 @@
-﻿using FamilyHubs.Notification.Data.Repository;
+﻿using FamilyHubs.Notification.Api;
+using FamilyHubs.Notification.Data.Repository;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -72,33 +73,11 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         try
         {
+#pragma warning disable S1481
             var context = scopedServices.GetRequiredService<ApplicationDbContext>();
+#pragma warning restore S1481
 
 
-            //IReadOnlyCollection<ReferralStatus> statuses = ReferralSeedData.SeedStatuses();
-
-            //if (!context.ReferralStatuses.Any())
-            //{
-            //    context.ReferralStatuses.AddRange(statuses);
-            //    context.SaveChanges();
-            //}
-
-            //if (!context.Referrals.Any())
-            //{
-            //    IReadOnlyCollection<Data.Entities.Referral> referrals = ReferralSeedData.SeedReferral();
-
-            //    foreach (Data.Entities.Referral referral in referrals)
-            //    {
-            //        var status = context.ReferralStatuses.SingleOrDefault(x => x.Name == referral.Status.Name);
-            //        if (status != null)
-            //        {
-            //            referral.Status = status;
-            //        }
-            //    }
-
-            //    context.Referrals.AddRange(referrals);
-            //    context.SaveChanges();
-            //}
 
         }
         catch (Exception ex)

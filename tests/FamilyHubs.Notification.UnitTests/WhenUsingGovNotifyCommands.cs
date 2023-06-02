@@ -7,8 +7,9 @@ using Moq;
 
 namespace FamilyHubs.Notification.UnitTests;
 
-public class WhenUsingGovNotifyCommands
+public class WhenUsingGovNotifyCommands : BaseCreateDbUnitTest
 {
+    
     [Fact]
     public async Task ThenSendNotificationCommand()
     {
@@ -30,7 +31,8 @@ public class WhenUsingGovNotifyCommands
         mockEmailSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
             .Callback(() => sendEmailCallback++);
 
-        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(mockEmailSender.Object, logger.Object);
+
+        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockEmailSender.Object, logger.Object);
 
         //Act
         var result = await handler.Handle(command, new System.Threading.CancellationToken());
@@ -63,7 +65,7 @@ public class WhenUsingGovNotifyCommands
         mockEmailSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
             .Callback(() => sendEmailCallback++).Throws(new Exception());
 
-        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(mockEmailSender.Object, logger.Object);
+        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockEmailSender.Object, logger.Object);
 
         //Act
         Func<Task> sutMethod = async () => { await handler.Handle(command, new System.Threading.CancellationToken()); };
@@ -72,7 +74,5 @@ public class WhenUsingGovNotifyCommands
         //Assert
         await sutMethod.Should().ThrowAsync<Exception>();
         sendEmailCallback.Should().Be(1);
-
-
     }
 }

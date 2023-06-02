@@ -1,6 +1,7 @@
 ﻿using FamilyHubs.Notification.Data.Interceptors;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using FamilyHubs.Notification.Data.Entities;
 
 namespace FamilyHubs.Notification.Data.Repository;
 
@@ -30,4 +31,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.AddInterceptors(_auditableEntitySaveChangesInterceptor);
     }
+
+    public DbSet<SentNotification> SentNotifications => Set<SentNotification>();
+    public DbSet<TokenValue> TokenValues => Set<TokenValue>();
 }
