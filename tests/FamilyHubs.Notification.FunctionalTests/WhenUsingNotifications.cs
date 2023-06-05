@@ -1,7 +1,5 @@
 ﻿using FamilyHubs.Notification.Api.Contracts;
 using FluentAssertions;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 
