@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace FamilyHubs.Notification.Data.Shared;
+namespace FamilyHubs.Notification.Api.Contracts;
 
 public class PaginatedList<T>
 {
@@ -34,3 +34,4 @@ public class PaginatedList<T>
         return new PaginatedList<T>(items, count, pageNumber, pageSize);
     }
 }
+

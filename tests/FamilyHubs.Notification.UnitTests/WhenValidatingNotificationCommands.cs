@@ -1,4 +1,5 @@
-﻿using FamilyHubs.Notification.Core.Commands.CreateNotification;
+﻿using FamilyHubs.Notification.Api.Contracts;
+using FamilyHubs.Notification.Core.Commands.CreateNotification;
 using FluentAssertions;
 
 namespace FamilyHubs.Notification.UnitTests;
@@ -10,7 +11,7 @@ public class WhenValidatingNotificationCommands
     {
         //Arrange
         var validator = new CreateNotificationCommandValidator();
-        var testModel = new CreateNotificationCommand(new Data.Shared.MessageDto
+        var testModel = new CreateNotificationCommand(new MessageDto
         {
             RecipientEmail = "someone@email.com",
             TemplateId = "12e7463d-dbb5-4beb-a321-3ea5b55bb642",
@@ -32,7 +33,7 @@ public class WhenValidatingNotificationCommands
     {
         //Arrange
         var validator = new CreateNotificationCommandValidator();
-        var testModel = new CreateNotificationCommand(new Data.Shared.MessageDto
+        var testModel = new CreateNotificationCommand(new MessageDto
         {
             RecipientEmail = string.Empty,
             TemplateId = "12e7463d-dbb5-4beb-a321-3ea5b55bb642",
@@ -54,7 +55,7 @@ public class WhenValidatingNotificationCommands
     {
         //Arrange
         var validator = new CreateNotificationCommandValidator();
-        var testModel = new CreateNotificationCommand(new Data.Shared.MessageDto
+        var testModel = new CreateNotificationCommand(new MessageDto
         {
             RecipientEmail = "someone@email.com",
             TemplateId = string.Empty,

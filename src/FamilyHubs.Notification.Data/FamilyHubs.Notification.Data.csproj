@@ -30,4 +30,8 @@
 	  <Folder Include="Repository\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Shared\FamilyHubs.Notification.Api.Contracts\FamilyHubs.Notification.Api.Contracts.csproj" />
+	</ItemGroup>
+
 </Project>

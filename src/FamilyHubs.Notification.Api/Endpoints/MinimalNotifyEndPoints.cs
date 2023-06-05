@@ -1,6 +1,6 @@
 ﻿using FamilyHubs.Notification.Core.Commands.CreateNotification;
 using FamilyHubs.Notification.Core.Queries.GetSentNotifications;
-using FamilyHubs.Notification.Data.Shared;
+using FamilyHubs.Notification.Api.Contracts;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

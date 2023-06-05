@@ -1,4 +1,4 @@
-﻿using FamilyHubs.Notification.Data.Shared;
+﻿using FamilyHubs.Notification.Api.Contracts;
 using Microsoft.Extensions.Options;
 using Notify.Interfaces;
 

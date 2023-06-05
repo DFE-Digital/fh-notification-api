@@ -1,4 +1,4 @@
-﻿using FamilyHubs.Notification.Data.Shared;
+﻿using FamilyHubs.Notification.Api.Contracts;
 
 namespace FamilyHubs.Notification.Data.NotificationServices;
 

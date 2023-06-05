@@ -1,10 +1,9 @@
+using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Core.Commands.CreateNotification;
 using FamilyHubs.Notification.Data.NotificationServices;
-using FamilyHubs.Notification.Data.Shared;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.Formats.Asn1;
 
 namespace FamilyHubs.Notification.IntegrationTests
 {
@@ -13,7 +12,7 @@ namespace FamilyHubs.Notification.IntegrationTests
         [Fact]
         public async Task ThenCreateNotification()
         {
-            var createNotificationCommand = new CreateNotificationCommand(new Data.Shared.MessageDto
+            var createNotificationCommand = new CreateNotificationCommand(new MessageDto
             { 
                 Id = 1,
                 RecipientEmail = "someone@aol.com",

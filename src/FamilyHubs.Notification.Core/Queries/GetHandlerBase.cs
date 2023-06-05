@@ -2,7 +2,7 @@
 using AutoMapper.QueryableExtensions;
 using FamilyHubs.Notification.Data.Entities;
 using FamilyHubs.Notification.Data.Repository;
-using FamilyHubs.Notification.Data.Shared;
+using FamilyHubs.Notification.Api.Contracts;
 using Microsoft.EntityFrameworkCore;
 
 namespace FamilyHubs.Notification.Core.Queries;

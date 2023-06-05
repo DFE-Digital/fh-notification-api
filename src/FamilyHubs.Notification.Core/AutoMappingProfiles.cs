@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
+using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Data.Entities;
-using FamilyHubs.Notification.Data.Shared;
 
 namespace FamilyHubs.Notification.Core;
 

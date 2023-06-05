@@ -1,4 +1,4 @@
-﻿namespace FamilyHubs.Notification.Data.Shared;
+﻿namespace FamilyHubs.Notification.Api.Contracts;
 
 public enum NotificationOrderBy
 {

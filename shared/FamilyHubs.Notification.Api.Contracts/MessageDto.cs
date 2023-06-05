@@ -1,8 +1,13 @@
-﻿namespace FamilyHubs.Notification.Data.Shared;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-public record MessageDto
+namespace FamilyHubs.Notification.Api.Contracts;
+
+public record MessageDto : DtoBase<long>
 {
-    public long Id { get; set; }
     public required string RecipientEmail { get; set; }
     public required string TemplateId { get; set; }
     public Dictionary<string, string> TemplateTokens { get; set; } = new Dictionary<string, string>();
@@ -56,3 +61,4 @@ public record MessageDto
             ;
     }
 }
+

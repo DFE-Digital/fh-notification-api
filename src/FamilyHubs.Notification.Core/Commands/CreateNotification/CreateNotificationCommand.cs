@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
+using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Core.Interfaces.Commands;
 using FamilyHubs.Notification.Data.Entities;
 using FamilyHubs.Notification.Data.NotificationServices;
 using FamilyHubs.Notification.Data.Repository;
-using FamilyHubs.Notification.Data.Shared;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

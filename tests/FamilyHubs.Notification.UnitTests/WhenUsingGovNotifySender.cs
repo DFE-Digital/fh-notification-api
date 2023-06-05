@@ -1,5 +1,5 @@
 using FamilyHubs.Notification.Data.NotificationServices;
-using FamilyHubs.Notification.Data.Shared;
+using FamilyHubs.Notification.Api.Contracts;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Moq;

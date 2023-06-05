@@ -1,16 +1,7 @@
-﻿using FamilyHubs.Notification.Core.Commands.CreateNotification;
+﻿using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Core.Queries.GetSentNotifications;
 using FamilyHubs.Notification.Data.Entities;
-using FamilyHubs.Notification.Data.NotificationServices;
-using FamilyHubs.Notification.Data.Shared;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
-using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FamilyHubs.Notification.UnitTests;
 
