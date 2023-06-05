@@ -10,15 +10,18 @@ namespace FamilyHubs.Notification.FunctionalTests;
 public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
 {
     [Fact (Skip = "only needs to run when testing end to end")]
+    //[Fact]
     public async Task ThenSendEmailNotificationToUser()
     {
         var command = new MessageDto
         {
             RecipientEmail = _emailRecipient,
-            TemplateId = "TemplateId",
+            TemplateId = "d460f57c-9c5e-4c33-8420-cdde4fca85c2",
             TemplateTokens = new Dictionary<string, string>
             {
-                { "key1", "value1" },
+                { "reference number", "0001" },
+                { "name of service", "Special Test Service" },
+                { "link to specific connection request", "wwww.someurl.com" }
             }
         };
 
