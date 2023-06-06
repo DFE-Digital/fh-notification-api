@@ -12,7 +12,7 @@ public class MinimalNotifyEndPoints
 {
     public void RegisterMinimalNotifyEndPoints(WebApplication app)
     {
-        app.MapPost("api/notify", async ([FromBody] MessageDto request, CancellationToken cancellationToken, ISender _mediator) =>
+        app.MapPost("api/notify", [Authorize] async ([FromBody] MessageDto request, CancellationToken cancellationToken, ISender _mediator) =>
         {
             CreateNotificationCommand command = new CreateNotificationCommand(request);
             var result = await _mediator.Send(command, cancellationToken);
