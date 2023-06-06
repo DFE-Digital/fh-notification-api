@@ -7,14 +7,23 @@ namespace FamilyHubs.Notification.FunctionalTests;
 
 public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
 {
-    [Fact (Skip = "only needs to run when testing end to end")]
-    //[Fact]
-    public async Task ThenSendEmailNotificationToUser()
+    // Uncomment to run locally
+    //[Theory]
+    //[InlineData("ProfessionalAcceptRequest")]
+    //[InlineData("ProfessionalDecineRequest")]
+    //[InlineData("ProfessionalSentRequest")]
+    //[InlineData("VcsNewRequest")]
+    public async Task ThenSendEmailNotificationToUser(string key)
     {
+        if (!_templates.ContainsKey(key))
+        {
+            return;
+        }
+
         var command = new MessageDto
         {
             RecipientEmail = _emailRecipient,
-            TemplateId = "d460f57c-9c5e-4c33-8420-cdde4fca85c2",
+            TemplateId = _templates[key],
             TemplateTokens = new Dictionary<string, string>
             {
                 { "reference number", "0001" },

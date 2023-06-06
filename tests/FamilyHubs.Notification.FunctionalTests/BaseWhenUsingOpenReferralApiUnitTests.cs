@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Notify.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -15,6 +16,7 @@ public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
     private bool _disposed;
     protected readonly JwtSecurityToken _token;
     protected string _emailRecipient;
+    protected Dictionary<string, string> _templates;
 
     protected BaseWhenUsingOpenReferralApiUnitTests()
     {
@@ -25,7 +27,18 @@ public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
                  .AddEnvironmentVariables()
                  .Build();
 
-        _emailRecipient = config.GetValue<string>("EmailRecipient");
+        _emailRecipient = config.GetValue<string>("EmailRecipient") ?? string.Empty;
+
+        string[] keys = new string[] { "ProfessionalAcceptRequest", "ProfessionalDecineRequest", "ProfessionalSentRequest", "VcsNewRequest" };
+
+        _templates = new Dictionary<string, string>();
+        foreach(string templatekey in keys)
+        {
+            var value = config.GetValue<string>(templatekey);
+            if (value != null)
+                _templates[templatekey] = value;
+        }
+
 
         var jti = Guid.NewGuid().ToString();
         var key = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(config["GovUkOidcConfiguration:BearerTokenSigningKey"]!));
@@ -39,7 +52,7 @@ public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
 
                },
             signingCredentials: creds,
-        expires: DateTime.UtcNow.AddMinutes(5)
+            expires: DateTime.UtcNow.AddMinutes(5)
             );
        
         _webAppFactory = new CustomWebApplicationFactory();
