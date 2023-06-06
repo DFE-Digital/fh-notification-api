@@ -11,10 +11,11 @@ namespace FamilyHubs.Notification.FunctionalTests;
 public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
 {
     protected readonly HttpClient Client;
-    private readonly CustomWebApplicationFactory _webAppFactory;
+    protected readonly CustomWebApplicationFactory _webAppFactory;
     private bool _disposed;
     protected readonly JwtSecurityToken _token;
-   
+    protected string _emailRecipient;
+
     protected BaseWhenUsingOpenReferralApiUnitTests()
     {
         _disposed = false;
@@ -23,6 +24,8 @@ public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
                 .AddJsonFile("appsettings.test.json")
                  .AddEnvironmentVariables()
                  .Build();
+
+        _emailRecipient = config.GetValue<string>("EmailRecipient");
 
         var jti = Guid.NewGuid().ToString();
         var key = new SymmetricSecurityKey(System.Text.Encoding.ASCII.GetBytes(config["GovUkOidcConfiguration:BearerTokenSigningKey"]!));

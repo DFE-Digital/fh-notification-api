@@ -14,6 +14,10 @@ using MediatR;
 using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using FamilyHubs.Notification.Core.Commands.CreateNotification;
+using FamilyHubs.Notification.Data.NotificationServices;
+using Notify.Client;
+using Notify.Interfaces;
 
 namespace FamilyHubs.Notification.Api;
 
@@ -46,6 +50,8 @@ public static class StartupExtensions
 
         services.RegisterMinimalEndPoints();
 
+        services.RegisterAdditionalInterfaces(configuration);
+
         services.RegisterAutoMapper();
 
         services.RegisterMediator();
@@ -54,7 +60,14 @@ public static class StartupExtensions
     private static void RegisterMinimalEndPoints(this IServiceCollection services)
     {
         services.AddTransient<MinimalGeneralEndPoints>();
-        //services.AddTransient<MinimalNotificationEndPoints>();
+        services.AddTransient<MinimalNotifyEndPoints>();
+    }
+
+    private static void RegisterAdditionalInterfaces(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddTransient<IEmailSender, GovNotifySender>();
+        var notifyAPIKey = configuration["GovNotifySetting:APIKey"];
+        services.AddTransient<IAsyncNotificationClient>(s => new NotificationClient(notifyAPIKey));
     }
 
     private static void RegisterAutoMapper(this IServiceCollection services)
@@ -107,7 +120,7 @@ public static class StartupExtensions
     {
         var assemblies = new[]
         {
-            typeof(AutoMappingProfiles).Assembly
+            typeof(CreateNotificationCommand).Assembly
         };
 
         services.AddMediatR(config =>
@@ -163,11 +176,13 @@ public static class StartupExtensions
         var genapi = scope.ServiceProvider.GetService<MinimalGeneralEndPoints>();
         genapi?.RegisterMinimalGeneralEndPoints(app);
 
+        var notifyApi = scope.ServiceProvider.GetService<MinimalNotifyEndPoints>();
+        notifyApi?.RegisterMinimalNotifyEndPoints(app);
+
         try
         {
             if (!app.Environment.IsProduction())
             {
-                // Seed Database
                 // Seed Database
                 var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
                 var shouldRestDatabaseOnRestart = app.Configuration.GetValue<bool>("ShouldRestDatabaseOnRestart");
