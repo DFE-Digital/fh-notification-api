@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FamilyHubs.Notification.Api.Contracts;
+﻿namespace FamilyHubs.Notification.Api.Contracts;
 
 public record MessageDto : DtoBase<long>
 {
-    public required string RecipientEmail { get; set; }
+    public required ApiKeyType ApiKeyType { get; set; }
+    public required List<string> NotificationEmails { get; set; }
     public required string TemplateId { get; set; }
     public Dictionary<string, string> TemplateTokens { get; set; } = new Dictionary<string, string>();
     public DateTime? Created { get; set; }
@@ -22,7 +17,8 @@ public record MessageDto : DtoBase<long>
         }
 
         result +=
-            EqualityComparer<string?>.Default.GetHashCode(RecipientEmail) * -1521134295 +
+            EqualityComparer<string?>.Default.GetHashCode(ApiKeyType.ToString()) * -1521134295 +
+            EqualityComparer<string?>.Default.GetHashCode(string.Join(',',NotificationEmails)) * -1521134295 +
             EqualityComparer<string?>.Default.GetHashCode(TemplateId) * -1521134295;
 
         foreach (var token in TemplateTokens)
@@ -56,7 +52,8 @@ public record MessageDto : DtoBase<long>
         }
 
         return
-            EqualityComparer<string>.Default.Equals(RecipientEmail, other.RecipientEmail) &&
+            EqualityComparer<ApiKeyType>.Default.Equals(ApiKeyType, other.ApiKeyType) &&
+            NotificationEmails.SequenceEqual(other.NotificationEmails) &&
             EqualityComparer<string>.Default.Equals(TemplateId, other.TemplateId)
             ;
     }
