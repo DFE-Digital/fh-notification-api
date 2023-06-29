@@ -5,5 +5,6 @@ public enum NotificationOrderBy
     NotSet,
     RecipientEmail,
     TemplateId,
-    Created
+    Created,
+    ApiKeyType
 }
