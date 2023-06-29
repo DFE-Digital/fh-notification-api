@@ -65,9 +65,20 @@ public static class StartupExtensions
 
     private static void RegisterAdditionalInterfaces(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<IEmailSender, GovNotifySender>();
-        var notifyAPIKey = configuration["GovNotifySetting:APIKey"];
-        services.AddTransient<IAsyncNotificationClient>(s => new NotificationClient(notifyAPIKey));
+        services.AddTransient<IConnectSender, ConnectNotifySender>();
+        var connectNotifyAPIKey = configuration["GovNotifySetting:ConnectAPIKey"];
+        if (connectNotifyAPIKey != null) 
+        {
+            services.AddTransient<IAsyncNotificationClient>(s => new ConnectNotificationClient(connectNotifyAPIKey));
+        }
+        
+        services.AddTransient<IManageSender, ManageNotifySender>();
+        var manageNotifyAPIKey = configuration["GovNotifySetting:ManageAPIKey"];
+        if (manageNotifyAPIKey != null)
+        {
+            services.AddTransient<IAsyncNotificationClient>(s => new ManageNotificationClient(manageNotifyAPIKey));
+        }
+        
     }
 
     private static void RegisterAutoMapper(this IServiceCollection services)

@@ -1,12 +1,37 @@
 ﻿using FamilyHubs.Notification.Api.Contracts;
 using FluentAssertions;
+using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using Xunit.Abstractions;
 
 namespace FamilyHubs.Notification.FunctionalTests;
 
+//https://stackoverflow.com/questions/7138935/xunit-net-does-not-capture-console-output
+
 public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
 {
+    private readonly ITestOutputHelper output;
+
+    public WhenUsingNotifications(ITestOutputHelper output)
+    {
+        this.output = output;
+    }
+
+    public class ConsoleWriter : StringWriter
+    {
+        private readonly ITestOutputHelper output;
+        public ConsoleWriter(ITestOutputHelper output)
+        {
+            this.output = output;
+        }
+
+        public override void WriteLine(string? value)
+        {
+            output.WriteLine(value);
+        }
+    }
+
     // Uncomment to run locally
     //[Theory]
     //[InlineData("ProfessionalAcceptRequest")]
@@ -15,6 +40,7 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
     //[InlineData("VcsNewRequest")]
     public async Task ThenSendEmailNotificationToUser(string key)
     {
+        Console.SetOut(new ConsoleWriter(output));
         if (!_templates.ContainsKey(key))
         {
             return;
@@ -22,12 +48,16 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
 
         var command = new MessageDto
         {
-            RecipientEmail = _emailRecipient,
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = new List<string> { _emailRecipient },
             TemplateId = _templates[key],
             TemplateTokens = new Dictionary<string, string>
             {
                 { "reference number", "0001" },
-                { "name of service", "Special Test Service" },
+                { "RequestNumber", "0001" },
+                { "ServiceName", "ServiceName" },
+                { "ViewConnectionRequestUrl",  "wwww.someurl.com"},
+                { "Name of service", "Special Test Service" },
                 { "link to specific connection request", "wwww.someurl.com" }
             }
         };

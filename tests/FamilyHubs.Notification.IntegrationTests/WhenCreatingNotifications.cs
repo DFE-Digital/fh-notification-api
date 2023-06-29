@@ -9,13 +9,16 @@ namespace FamilyHubs.Notification.IntegrationTests
 {
     public class WhenCreatingNotifications : DataIntegrationTestBase
     {
-        [Fact]
-        public async Task ThenCreateNotification()
+        [Theory]
+        [InlineData(ApiKeyType.ManageKey)]
+        [InlineData(ApiKeyType.ConnectKey)]
+        public async Task ThenCreateNotification(ApiKeyType apiKeyType)
         {
             var createNotificationCommand = new CreateNotificationCommand(new MessageDto
             { 
                 Id = 1,
-                RecipientEmail = "someone@aol.com",
+                ApiKeyType = apiKeyType,
+                NotificationEmails = new List<string> { "firstperson@aol.com", "secondperson@aol.com" },
                 TemplateId = "05d38535-a5c3-443e-bfde-54f2abdd5c78",
                 TemplateTokens = new Dictionary<string, string>
                 {
@@ -26,19 +29,20 @@ namespace FamilyHubs.Notification.IntegrationTests
             });
 
             var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
-            Mock<IEmailSender> mockEmailSender = new Mock<IEmailSender>();
+            Mock<IConnectSender> mockConnectSender = new Mock<IConnectSender>();
+            Mock<IManageSender> mockManageSender = new Mock<IManageSender>();
             int sendEmailCallback = 0;
-            mockEmailSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
+            mockConnectSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
                 .Callback(() => sendEmailCallback++);
 
-            var handler = new CreateNotificationCommandHandler(TestDbContext, Mapper, mockEmailSender.Object, logger.Object);
+            var handler = new CreateNotificationCommandHandler(TestDbContext, Mapper, mockManageSender.Object,  mockConnectSender.Object, logger.Object);
 
             //Act
             var result = await handler.Handle(createNotificationCommand, new CancellationToken());
             result.Should().BeTrue();
             var actualNotification = TestDbContext.SentNotifications.SingleOrDefault(x => x.Id == createNotificationCommand.MessageDto.Id);
             ArgumentNullException.ThrowIfNull(actualNotification);
-            actualNotification.RecipientEmail.Should().Be(createNotificationCommand.MessageDto.RecipientEmail);
+            actualNotification.ApiKeyType.Should().Be(apiKeyType);
             actualNotification.TemplateId.Should().Be(createNotificationCommand.MessageDto.TemplateId);
             foreach (var token in createNotificationCommand.MessageDto.TemplateTokens)
             {
@@ -46,6 +50,8 @@ namespace FamilyHubs.Notification.IntegrationTests
                 ArgumentNullException.ThrowIfNull(tokenValue);
                 tokenValue.Value.Should().Be(token.Value);
             }
+            actualNotification.Notified.Should().Contain(x => x.Value == createNotificationCommand.MessageDto.NotificationEmails[0]);
+            actualNotification.Notified.Should().Contain(x => x.Value == createNotificationCommand.MessageDto.NotificationEmails[1]);
         }
     }
 }

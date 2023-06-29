@@ -10,14 +10,16 @@ namespace FamilyHubs.Notification.Core.Queries.GetSentNotifications;
 
 public class GetNotificationsCommand : IRequest<PaginatedList<MessageDto>>
 {
-    public GetNotificationsCommand(NotificationOrderBy? notificationOrderBy, bool? isAssending, int? pageNumber, int? pageSize)
+    public GetNotificationsCommand(ApiKeyType? apiKeyType, NotificationOrderBy? notificationOrderBy, bool? isAssending, int? pageNumber, int? pageSize)
     {
+        ApiKeyType = apiKeyType;
         OrderBy = notificationOrderBy;
         IsAssending = isAssending;
         PageNumber = pageNumber != null ? pageNumber.Value : 1;
         PageSize = pageSize != null ? pageSize.Value : 10;
     }
 
+    public ApiKeyType? ApiKeyType { get; set; }
     public NotificationOrderBy? OrderBy { get; set; }
     public bool? IsAssending { get; init; }
     public int PageNumber { get; set; } = 1;
@@ -36,11 +38,17 @@ public class GetNotificationsCommandHandler : GetHandlerBase, IRequestHandler<Ge
     {
         var entities = _context.SentNotifications
             .Include(x => x.TokenValues)
+            .Include(x => x.Notified)
             .AsNoTracking();
 
         if (entities == null)
         {
             throw new NotFoundException(nameof(SentNotification), "");
+        }
+
+        if (request.ApiKeyType != null)
+        {
+            entities = _context.SentNotifications.Where(x => x.ApiKeyType == request.ApiKeyType);
         }
 
         entities = OrderBy(entities, request.OrderBy, request.IsAssending);

@@ -2,7 +2,12 @@
 
 namespace FamilyHubs.Notification.Data.NotificationServices;
 
-public interface IEmailSender
+public interface IConnectSender
+{
+    Task SendEmailAsync(MessageDto messageDto);
+}
+
+public interface IManageSender
 {
     Task SendEmailAsync(MessageDto messageDto);
 }
