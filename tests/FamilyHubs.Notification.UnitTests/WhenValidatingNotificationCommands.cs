@@ -13,7 +13,8 @@ public class WhenValidatingNotificationCommands
         var validator = new CreateNotificationCommandValidator();
         var testModel = new CreateNotificationCommand(new MessageDto
         {
-            RecipientEmail = "someone@email.com",
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = new List<string> { "someone@email.com "},
             TemplateId = "12e7463d-dbb5-4beb-a321-3ea5b55bb642",
             TemplateTokens = new Dictionary<string, string>
             {
@@ -35,7 +36,8 @@ public class WhenValidatingNotificationCommands
         var validator = new CreateNotificationCommandValidator();
         var testModel = new CreateNotificationCommand(new MessageDto
         {
-            RecipientEmail = string.Empty,
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = default!,
             TemplateId = "12e7463d-dbb5-4beb-a321-3ea5b55bb642",
             TemplateTokens = new Dictionary<string, string>
             {
@@ -57,7 +59,8 @@ public class WhenValidatingNotificationCommands
         var validator = new CreateNotificationCommandValidator();
         var testModel = new CreateNotificationCommand(new MessageDto
         {
-            RecipientEmail = "someone@email.com",
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = new List<string> { "someone@email.com " },
             TemplateId = string.Empty,
             TemplateTokens = new Dictionary<string, string>
             {

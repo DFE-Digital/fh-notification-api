@@ -2,6 +2,7 @@
 
 public class GovNotifySetting
 {
-    public string APIKey { get; set; } = default!;
+    public string ManageAPIKey  { get; set; } = default!;
+    public string ConnectAPIKey { get; set; } = default!;
     public string TemplateId { get; set; } = default!;
 }

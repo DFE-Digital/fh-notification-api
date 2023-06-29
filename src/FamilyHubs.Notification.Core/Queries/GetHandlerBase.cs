@@ -42,9 +42,9 @@ public class GetHandlerBase
         {
             case NotificationOrderBy.RecipientEmail:
                 if (isAssending.Value)
-                    return currentList.OrderBy(x => x.RecipientEmail);
-                return currentList.OrderByDescending(x => x.RecipientEmail);
-
+                    return currentList.OrderBy(x => x.Notified.Select(x => x.Value).FirstOrDefault());
+                return currentList.OrderByDescending(x => x.Notified.Select(x => x.Value).FirstOrDefault());
+                
             case NotificationOrderBy.Created:
                 if (isAssending.Value)
                     return currentList.OrderBy(x => x.Created);
@@ -54,6 +54,12 @@ public class GetHandlerBase
                 if (isAssending.Value)
                     return currentList.OrderBy(x => x.TemplateId);
                 return currentList.OrderByDescending(x => x.TemplateId);
+
+            case NotificationOrderBy.ApiKeyType:
+                if (isAssending.Value)
+                    return currentList.OrderBy(x => x.ApiKeyType);
+                return currentList.OrderByDescending(x => x.ApiKeyType);
+
 
         }
 

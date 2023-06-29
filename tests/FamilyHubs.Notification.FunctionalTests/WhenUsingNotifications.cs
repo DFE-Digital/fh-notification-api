@@ -22,12 +22,16 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
 
         var command = new MessageDto
         {
-            RecipientEmail = _emailRecipient,
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = new List<string> { _emailRecipient },
             TemplateId = _templates[key],
             TemplateTokens = new Dictionary<string, string>
             {
                 { "reference number", "0001" },
-                { "name of service", "Special Test Service" },
+                { "RequestNumber", "0001" },
+                { "ServiceName", "ServiceName" },
+                { "ViewConnectionRequestUrl",  "wwww.someurl.com"},
+                { "Name of service", "Special Test Service" },
                 { "link to specific connection request", "wwww.someurl.com" }
             }
         };

@@ -20,19 +20,21 @@ public class WhenUsingGovNotifyCommands : BaseCreateDbUnitTest
 
         MessageDto messageDto = new MessageDto
         {
-            RecipientEmail = "someone@email.com",
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = new List<string> { "someone@email.com" },
             TemplateId = Guid.NewGuid().ToString(),
             TemplateTokens = dict
         };
         CreateNotificationCommand command = new CreateNotificationCommand(messageDto);
         var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
-        Mock<IEmailSender> mockEmailSender = new Mock<IEmailSender>();
+        Mock<IConnectSender> mockConnectSender = new Mock<IConnectSender>();
+        Mock<IManageSender> mockManageSender = new Mock<IManageSender>();
         int sendEmailCallback = 0;
-        mockEmailSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
+        mockConnectSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
             .Callback(() => sendEmailCallback++);
 
 
-        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockEmailSender.Object, logger.Object);
+        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockManageSender.Object, mockConnectSender.Object, logger.Object);
 
         //Act
         var result = await handler.Handle(command, new System.Threading.CancellationToken());
@@ -54,18 +56,20 @@ public class WhenUsingGovNotifyCommands : BaseCreateDbUnitTest
 
         MessageDto messageDto = new MessageDto
         {
-            RecipientEmail = "someone@email.com",
+            ApiKeyType = ApiKeyType.ConnectKey,
+            NotificationEmails = new List<string> { "someone@email.com" },
             TemplateId = Guid.NewGuid().ToString(),
             TemplateTokens = dict
         };
         CreateNotificationCommand command = new CreateNotificationCommand(messageDto);
         var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
-        Mock<IEmailSender> mockEmailSender = new Mock<IEmailSender>();
+        Mock<IConnectSender> mockConnectSender = new Mock<IConnectSender>();
+        Mock<IManageSender> mockManageSender = new Mock<IManageSender>();
         int sendEmailCallback = 0;
-        mockEmailSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
+        mockConnectSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
             .Callback(() => sendEmailCallback++).Throws(new Exception());
 
-        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockEmailSender.Object, logger.Object);
+        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockManageSender.Object, mockConnectSender.Object, logger.Object);
 
         //Act
         Func<Task> sutMethod = async () => { await handler.Handle(command, new System.Threading.CancellationToken()); };
