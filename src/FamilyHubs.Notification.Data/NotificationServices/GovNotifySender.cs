@@ -94,6 +94,8 @@ public class GovNotifySender
 
         foreach(var notification in messageDto.NotificationEmails) 
         {
+            Console.WriteLine($"Sending email to: {notification}");
+
             await _notificationClient.SendEmailAsync(
                 emailAddress: notification,
                 templateId: !string.IsNullOrEmpty(messageDto.TemplateId) ? messageDto.TemplateId : _govNotifySettings.Value.TemplateId,
