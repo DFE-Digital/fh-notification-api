@@ -6,7 +6,6 @@ using FamilyHubs.Notification.Data.NotificationServices;
 using FamilyHubs.Notification.Data.Repository;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Reflection;
 
 namespace FamilyHubs.Notification.Core.Commands.CreateNotification;
 
@@ -41,25 +40,17 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
     {
         try
         {
-            if (request.MessageDto.ApiKeyType == ApiKeyType.ManageKey)
-            {
-                await _manageSender.SendEmailAsync(request.MessageDto);
-            }
-            else
-            {
-                await _connectSender.SendEmailAsync(request.MessageDto);
-            }
-            
+            var sender = (INotifySender)(request.MessageDto.ApiKeyType == ApiKeyType.ManageKey ? _manageSender : _connectSender);
+            await _manageSender.SendEmailAsync(request.MessageDto);
 
             var sentNotification = _mapper.Map<SentNotification>(request.MessageDto);
             if (sentNotification != null) 
             {
                 _context.SentNotifications.Add(sentNotification);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
             }
 
             return true;
-
         }
         catch (Exception ex)
         {

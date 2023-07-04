@@ -1,6 +1,8 @@
 ﻿using FamilyHubs.Notification.Api.Contracts;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Notify.Client;
+using Notify.Exceptions;
 using Notify.Interfaces;
 
 namespace FamilyHubs.Notification.Data.NotificationServices;
@@ -47,26 +49,32 @@ public class ManageNotificationClient : NotificationClient, IManageNotificationC
 
 public class ConnectNotifySender : GovNotifySender, IConnectSender
 {
-    public ConnectNotifySender(IEnumerable<IAsyncNotificationClient> notificationClients, IOptions<GovNotifySetting> govNotifySettings)
-        : base(notificationClients, govNotifySettings)
+    public ConnectNotifySender(
+        IEnumerable<IAsyncNotificationClient> notificationClients,
+        IOptions<GovNotifySetting> govNotifySettings,
+        ILogger<ConnectNotifySender> logger)
+        : base(notificationClients, govNotifySettings, logger)
     {
-        _notificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ConnectNotificationClient));
-        if (_notificationClient == null)
+        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ConnectNotificationClient));
+        if (NotificationClient == null)
         {
-            _notificationClient = notificationClients.FirstOrDefault();
+            throw new InvalidOperationException("Connect Notification Client not found");
         }
     }
 }
 
 public class ManageNotifySender : GovNotifySender, IManageSender
 {
-    public ManageNotifySender(IEnumerable<IAsyncNotificationClient> notificationClients, IOptions<GovNotifySetting> govNotifySettings)
-        : base(notificationClients, govNotifySettings)
+    public ManageNotifySender(
+        IEnumerable<IAsyncNotificationClient> notificationClients,
+        IOptions<GovNotifySetting> govNotifySettings,
+        ILogger<ManageNotifySender> logger)
+        : base(notificationClients, govNotifySettings, logger)
     {
-        _notificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ManageNotificationClient));
-        if (_notificationClient == null)
+        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ManageNotificationClient));
+        if (NotificationClient == null)
         {
-            _notificationClient = notificationClients.FirstOrDefault();
+            throw new InvalidOperationException("Manage Notification Client not found");
         }
     }
 }
@@ -74,38 +82,46 @@ public class ManageNotifySender : GovNotifySender, IManageSender
 public class GovNotifySender
 {
     private readonly IOptions<GovNotifySetting> _govNotifySettings;
-    protected IAsyncNotificationClient? _notificationClient;
+    private readonly ILogger _logger;
+    protected IAsyncNotificationClient? NotificationClient;
 
-    public GovNotifySender(IEnumerable<IAsyncNotificationClient> notificationClients, IOptions<GovNotifySetting> govNotifySettings)
+    public GovNotifySender(
+        IEnumerable<IAsyncNotificationClient> notificationClients,
+        IOptions<GovNotifySetting> govNotifySettings,
+        ILogger logger)
     {
         _govNotifySettings = govNotifySettings;
+        _logger = logger;
     }
 
     public async Task SendEmailAsync(MessageDto messageDto)
     {
-        if (_notificationClient == null)
+        if (NotificationClient == null)
             return;
 
-        Dictionary<String, dynamic> personalisation = new Dictionary<string, dynamic>();
-        foreach (KeyValuePair<string, string> token in messageDto.TemplateTokens)
-        {
-            personalisation.Add(token.Key, token.Value);
-        }
+        var personalisation = messageDto.TemplateTokens
+            .ToDictionary(pair => pair.Key, pair => (dynamic)pair.Value);
 
         foreach(var notification in messageDto.NotificationEmails) 
         {
-            Console.WriteLine($"Sending email to: {notification}");
+            _logger.LogInformation("Sending email to: {EmailAddress}", notification);
 
-            await _notificationClient.SendEmailAsync(
-                emailAddress: notification,
-                templateId: !string.IsNullOrEmpty(messageDto.TemplateId) ? messageDto.TemplateId : _govNotifySettings.Value.TemplateId,
-                personalisation: personalisation,
-                clientReference: null,
-                emailReplyToId: null
-            );
+            // make best effort to send notification to all recipients
+            try
+            {
+                await NotificationClient.SendEmailAsync(
+                    emailAddress: notification,
+                    templateId: !string.IsNullOrEmpty(messageDto.TemplateId) ? messageDto.TemplateId : _govNotifySettings.Value.TemplateId,
+                    personalisation: personalisation,
+                    clientReference: null,
+                    emailReplyToId: null
+                );
+            }
+            catch (NotifyClientException e)
+            {
+                _logger.LogError(e, "An error occurred sending notification. {ExceptionMessage}", e.Message);
+            }
         }
-
-        
     }
 }
 
