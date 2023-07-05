@@ -12,17 +12,9 @@ public interface IServiceNotificationClient : IAsyncNotificationClient
     ApiKeyType ApiKeyType { get; }
 }
 
-//public interface IConnectNotificationClient : IAsyncNotificationClient
-//{
-//}
-
-//public interface IManageNotificationClient : IAsyncNotificationClient
-//{
-//}
-
 public class ServiceNotificationClient : NotificationClient, IServiceNotificationClient
 {
-    public ApiKeyType ApiKeyType { get; private set; }
+    public ApiKeyType ApiKeyType { get; }
 
     //todo: ConnectNotificationClient is transient, so we'll have a new HttpClient each time, but HttpClient should be a singleton
     public ServiceNotificationClient(ApiKeyType apiKeyType, string apiKey)
@@ -30,60 +22,7 @@ public class ServiceNotificationClient : NotificationClient, IServiceNotificatio
     {
         ApiKeyType = apiKeyType;
     }
-
-    //public ServiceNotificationClient(IHttpClient client, string apiKey)
-    //    : base(client, apiKey)
-    //{
-    //}
 }
-
-//public class ManageNotificationClient : NotificationClient, IManageNotificationClient
-//{
-//    public string Name => "Manage";
-
-//    public ManageNotificationClient(string apiKey)
-//            : base(new HttpClientWrapper(new HttpClient()), apiKey)
-//    {
-//    }
-
-//    public ManageNotificationClient(IHttpClient client, string apiKey)
-//        : base(client, apiKey)
-//    {
-//    }
-
-//}
-
-//public class ConnectNotifySender : GovNotifySender, IConnectSender
-//{
-//    public ConnectNotifySender(
-//        IEnumerable<IAsyncNotificationClient> notificationClients,
-//        IOptions<GovNotifySetting> govNotifySettings,
-//        ILogger<ConnectNotifySender> logger)
-//        : base(notificationClients, govNotifySettings, logger)
-//    {
-//        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ConnectNotificationClient));
-//        if (NotificationClient == null)
-//        {
-//            throw new InvalidOperationException("Connect Notification Client not found");
-//        }
-//    }
-//}
-
-//public class ManageNotifySender : GovNotifySender, IManageSender
-//{
-//    public ManageNotifySender(
-//        IEnumerable<IAsyncNotificationClient> notificationClients,
-//        IOptions<GovNotifySetting> govNotifySettings,
-//        ILogger<ManageNotifySender> logger)
-//        : base(notificationClients, govNotifySettings, logger)
-//    {
-//        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ManageNotificationClient));
-//        if (NotificationClient == null)
-//        {
-//            throw new InvalidOperationException("Manage Notification Client not found");
-//        }
-//    }
-//}
 
 public interface IGovNotifySender
 {
