@@ -10,18 +10,18 @@ namespace FamilyHubs.Notification.Core.Queries.GetSentNotifications;
 
 public class GetNotificationsCommand : IRequest<PaginatedList<MessageDto>>
 {
-    public GetNotificationsCommand(ApiKeyType? apiKeyType, NotificationOrderBy? notificationOrderBy, bool? isAssending, int? pageNumber, int? pageSize)
+    public GetNotificationsCommand(ApiKeyType? apiKeyType, NotificationOrderBy? notificationOrderBy, bool? isAscending, int? pageNumber, int? pageSize)
     {
         ApiKeyType = apiKeyType;
         OrderBy = notificationOrderBy;
-        IsAssending = isAssending;
+        IsAscending = isAscending;
         PageNumber = pageNumber != null ? pageNumber.Value : 1;
         PageSize = pageSize != null ? pageSize.Value : 10;
     }
 
     public ApiKeyType? ApiKeyType { get; set; }
     public NotificationOrderBy? OrderBy { get; set; }
-    public bool? IsAssending { get; init; }
+    public bool? IsAscending { get; init; }
     public int PageNumber { get; set; } = 1;
     public int PageSize { get; set; } = 10;
 }
@@ -31,7 +31,6 @@ public class GetNotificationsCommandHandler : GetHandlerBase, IRequestHandler<Ge
     public GetNotificationsCommandHandler(ApplicationDbContext context, IMapper mapper)
         : base(context, mapper)
     {
-
     }
 
     public async Task<PaginatedList<MessageDto>> Handle(GetNotificationsCommand request, CancellationToken cancellationToken)
@@ -51,7 +50,7 @@ public class GetNotificationsCommandHandler : GetHandlerBase, IRequestHandler<Ge
             entities = _context.SentNotifications.Where(x => x.ApiKeyType == request.ApiKeyType);
         }
 
-        entities = OrderBy(entities, request.OrderBy, request.IsAssending);
+        entities = OrderBy(entities, request.OrderBy, request.IsAscending);
 
         return await GetPaginatedList(request == null, entities, request?.PageNumber ?? 1, request?.PageSize ?? 10);
     }
