@@ -1,6 +1,5 @@
 ﻿using FamilyHubs.Notification.Api.Contracts;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Notify.Client;
 using Notify.Exceptions;
 using Notify.Interfaces;
@@ -32,16 +31,13 @@ public interface IGovNotifySender
 public class GovNotifySender : IGovNotifySender
 {
     private readonly IEnumerable<IServiceNotificationClient> _notificationClients;
-    private readonly IOptions<GovNotifySetting> _govNotifySettings;
     private readonly ILogger _logger;
 
     public GovNotifySender(
         IEnumerable<IServiceNotificationClient> notificationClients,
-        IOptions<GovNotifySetting> govNotifySettings,
         ILogger<GovNotifySender> logger)
     {
         _notificationClients = notificationClients;
-        _govNotifySettings = govNotifySettings;
         _logger = logger;
 
         //todo: get all templates and cache, so that we can do error checking when sending later
@@ -58,9 +54,9 @@ public class GovNotifySender : IGovNotifySender
         var personalisation = messageDto.TemplateTokens
             .ToDictionary(pair => pair.Key, pair => (dynamic)pair.Value);
 
-        foreach(var notification in messageDto.NotificationEmails) 
+        foreach(var emailAddress in messageDto.NotificationEmails) 
         {
-            _logger.LogInformation("Sending email to: {EmailAddress}", notification);
+            _logger.LogInformation("Sending email to: {EmailAddress}", emailAddress);
 
             // make best effort to send notification to all recipients
             try
@@ -68,12 +64,7 @@ public class GovNotifySender : IGovNotifySender
                 //todo: fail if messageDto.TemplateId not found, rather than have fallback template
                 //todo: add dev only code to get templates from GovNotify and check exists. perhaps always do, as govuk silently ignores when template id doesn't exist
                 var result = await client.SendEmailAsync(
-                    emailAddress: notification,
-                    templateId: !string.IsNullOrEmpty(messageDto.TemplateId) ? messageDto.TemplateId : _govNotifySettings.Value.TemplateId,
-                    personalisation: personalisation,
-                    clientReference: null,
-                    emailReplyToId: null
-                );
+                    emailAddress, messageDto.TemplateId, personalisation);
             }
             catch (NotifyClientException e)
             {
