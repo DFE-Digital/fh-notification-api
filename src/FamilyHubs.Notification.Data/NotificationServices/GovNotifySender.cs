@@ -1,32 +1,8 @@
 ﻿using FamilyHubs.Notification.Api.Contracts;
 using Microsoft.Extensions.Logging;
-using Notify.Client;
 using Notify.Exceptions;
-using Notify.Interfaces;
 
 namespace FamilyHubs.Notification.Data.NotificationServices;
-
-public interface IServiceNotificationClient : IAsyncNotificationClient
-{
-    ApiKeyType ApiKeyType { get; }
-}
-
-public class ServiceNotificationClient : NotificationClient, IServiceNotificationClient
-{
-    public ApiKeyType ApiKeyType { get; }
-
-    //todo: ConnectNotificationClient is transient, so we'll have a new HttpClient each time, but HttpClient should be a singleton
-    public ServiceNotificationClient(ApiKeyType apiKeyType, string apiKey)
-            : base(new HttpClientWrapper(new HttpClient()), apiKey)
-    {
-        ApiKeyType = apiKeyType;
-    }
-}
-
-public interface IGovNotifySender
-{
-    Task SendEmailAsync(MessageDto messageDto);
-}
 
 public class GovNotifySender : IGovNotifySender
 {
