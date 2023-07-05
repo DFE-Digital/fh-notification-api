@@ -5,53 +5,51 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace FamilyHubs.Notification.IntegrationTests
+namespace FamilyHubs.Notification.IntegrationTests;
+
+public class WhenCreatingNotifications : DataIntegrationTestBase
 {
-    public class WhenCreatingNotifications : DataIntegrationTestBase
+    [Theory]
+    [InlineData(ApiKeyType.ManageKey)]
+    [InlineData(ApiKeyType.ConnectKey)]
+    public async Task ThenCreateNotification(ApiKeyType apiKeyType)
     {
-        [Theory]
-        [InlineData(ApiKeyType.ManageKey)]
-        [InlineData(ApiKeyType.ConnectKey)]
-        public async Task ThenCreateNotification(ApiKeyType apiKeyType)
+        var createNotificationCommand = new CreateNotificationCommand(new MessageDto
         {
-            var createNotificationCommand = new CreateNotificationCommand(new MessageDto
-            { 
-                Id = 1,
-                ApiKeyType = apiKeyType,
-                NotificationEmails = new List<string> { "firstperson@aol.com", "secondperson@aol.com" },
-                TemplateId = "05d38535-a5c3-443e-bfde-54f2abdd5c78",
-                TemplateTokens = new Dictionary<string, string>
-                {
-                    { "Key1", "Value1" },
-                    { "Key2", "Value2" },
-                }
-
-            });
-
-            var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
-            Mock<IConnectSender> mockConnectSender = new Mock<IConnectSender>();
-            Mock<IManageSender> mockManageSender = new Mock<IManageSender>();
-            int sendEmailCallback = 0;
-            mockConnectSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
-                .Callback(() => sendEmailCallback++);
-
-            var handler = new CreateNotificationCommandHandler(TestDbContext, Mapper, mockManageSender.Object,  mockConnectSender.Object, logger.Object);
-
-            //Act
-            var result = await handler.Handle(createNotificationCommand, new CancellationToken());
-            result.Should().BeTrue();
-            var actualNotification = TestDbContext.SentNotifications.SingleOrDefault(x => x.Id == createNotificationCommand.MessageDto.Id);
-            ArgumentNullException.ThrowIfNull(actualNotification);
-            actualNotification.ApiKeyType.Should().Be(apiKeyType);
-            actualNotification.TemplateId.Should().Be(createNotificationCommand.MessageDto.TemplateId);
-            foreach (var token in createNotificationCommand.MessageDto.TemplateTokens)
+            Id = 1,
+            ApiKeyType = apiKeyType,
+            NotificationEmails = new List<string> { "firstperson@aol.com", "secondperson@aol.com" },
+            TemplateId = "05d38535-a5c3-443e-bfde-54f2abdd5c78",
+            TemplateTokens = new Dictionary<string, string>
             {
-                var tokenValue = actualNotification.TokenValues.FirstOrDefault(x => x.Key == token.Key);
-                ArgumentNullException.ThrowIfNull(tokenValue);
-                tokenValue.Value.Should().Be(token.Value);
+                { "Key1", "Value1" },
+                { "Key2", "Value2" },
             }
-            actualNotification.Notified.Should().Contain(x => x.Value == createNotificationCommand.MessageDto.NotificationEmails[0]);
-            actualNotification.Notified.Should().Contain(x => x.Value == createNotificationCommand.MessageDto.NotificationEmails[1]);
+
+        });
+
+        var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
+        Mock<IGovNotifySender> govNotifySender = new Mock<IGovNotifySender>();
+        int sendEmailCallback = 0;
+        govNotifySender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
+            .Callback(() => sendEmailCallback++);
+
+        var handler = new CreateNotificationCommandHandler(TestDbContext, govNotifySender.Object, Mapper, logger.Object);
+
+        //Act
+        var result = await handler.Handle(createNotificationCommand, new CancellationToken());
+        result.Should().BeTrue();
+        var actualNotification = TestDbContext.SentNotifications.SingleOrDefault(x => x.Id == createNotificationCommand.MessageDto.Id);
+        ArgumentNullException.ThrowIfNull(actualNotification);
+        actualNotification.ApiKeyType.Should().Be(apiKeyType);
+        actualNotification.TemplateId.Should().Be(createNotificationCommand.MessageDto.TemplateId);
+        foreach (var token in createNotificationCommand.MessageDto.TemplateTokens)
+        {
+            var tokenValue = actualNotification.TokenValues.FirstOrDefault(x => x.Key == token.Key);
+            ArgumentNullException.ThrowIfNull(tokenValue);
+            tokenValue.Value.Should().Be(token.Value);
         }
+        actualNotification.Notified.Should().Contain(x => x.Value == createNotificationCommand.MessageDto.NotificationEmails[0]);
+        actualNotification.Notified.Should().Contain(x => x.Value == createNotificationCommand.MessageDto.NotificationEmails[1]);
     }
 }

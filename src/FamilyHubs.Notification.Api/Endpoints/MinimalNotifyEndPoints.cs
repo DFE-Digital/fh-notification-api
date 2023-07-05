@@ -19,7 +19,6 @@ public class MinimalNotifyEndPoints
             return result;
 
         }).WithMetadata(new SwaggerOperationAttribute("Notifications", "Send Notification") { Tags = new[] { "Notifications" } });
-
         
         app.MapGet("api/notify", [Authorize] async (ApiKeyType? apiKeyType, NotificationOrderBy ? orderBy, bool? isAssending, int? pageNumber, int? pageSize, CancellationToken cancellationToken, ISender _mediator) =>
         {
@@ -28,6 +27,5 @@ public class MinimalNotifyEndPoints
             return result;
 
         }).WithMetadata(new SwaggerOperationAttribute("Get Notifications", "Get Paginated Notification List") { Tags = new[] { "Notifications" } });
-
     }
 }

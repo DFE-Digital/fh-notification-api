@@ -1,5 +1,6 @@
 ﻿using AutoMapper.EquivalencyExpression;
 using AutoMapper;
+using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Api.Endpoints;
 using FamilyHubs.SharedKernel.GovLogin.AppStart;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -65,20 +66,22 @@ public static class StartupExtensions
 
     private static void RegisterAdditionalInterfaces(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddTransient<IConnectSender, ConnectNotifySender>();
-        var connectNotifyAPIKey = configuration["GovNotifySetting:ConnectAPIKey"];
-        if (connectNotifyAPIKey != null) 
+        services.AddSingleton<IGovNotifySender, GovNotifySender>();
+        string? connectNotifyApiKey = configuration["GovNotifySetting:ConnectAPIKey"];
+        if (connectNotifyApiKey == null)
         {
-            services.AddTransient<IAsyncNotificationClient>(s => new ConnectNotificationClient(connectNotifyAPIKey));
+            //todo: use config exception
+            throw new InvalidOperationException("Connect API Key is not configured");
         }
+        services.AddSingleton<IServiceNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ConnectKey, connectNotifyApiKey));
         
-        services.AddTransient<IManageSender, ManageNotifySender>();
-        var manageNotifyAPIKey = configuration["GovNotifySetting:ManageAPIKey"];
-        if (manageNotifyAPIKey != null)
+        //services.AddTransient<IManageSender, ManageNotifySender>();
+        string? manageNotifyApiKey = configuration["GovNotifySetting:ManageAPIKey"];
+        if (manageNotifyApiKey == null)
         {
-            services.AddTransient<IAsyncNotificationClient>(s => new ManageNotificationClient(manageNotifyAPIKey));
+            throw new InvalidOperationException("Manage API Key is not configured");
         }
-        
+        services.AddSingleton<IAsyncNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ManageKey, manageNotifyApiKey));
     }
 
     private static void RegisterAutoMapper(this IServiceCollection services)

@@ -9,14 +9,15 @@ namespace FamilyHubs.Notification.UnitTests;
 
 public class WhenUsingGovNotifyCommands : BaseCreateDbUnitTest
 {
-    
     [Fact]
     public async Task ThenSendNotificationCommand()
     {
         //Arrange
-        var dict = new Dictionary<string, string>();
-        dict.Add("Key1", "Value1");
-        dict.Add("Key2", "Value2");
+        var dict = new Dictionary<string, string>
+        {
+            {"Key1", "Value1"},
+            {"Key2", "Value2"}
+        };
 
         MessageDto messageDto = new MessageDto
         {
@@ -27,32 +28,30 @@ public class WhenUsingGovNotifyCommands : BaseCreateDbUnitTest
         };
         CreateNotificationCommand command = new CreateNotificationCommand(messageDto);
         var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
-        Mock<IConnectSender> mockConnectSender = new Mock<IConnectSender>();
-        Mock<IManageSender> mockManageSender = new Mock<IManageSender>();
+        Mock<IGovNotifySender> govNotifySender = new Mock<IGovNotifySender>();
         int sendEmailCallback = 0;
-        mockConnectSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
+        govNotifySender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
             .Callback(() => sendEmailCallback++);
 
-
-        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockManageSender.Object, mockConnectSender.Object, logger.Object);
+        var handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), govNotifySender.Object, GetMapper(), logger.Object);
 
         //Act
-        var result = await handler.Handle(command, new System.Threading.CancellationToken());
+        var result = await handler.Handle(command, new CancellationToken());
 
         //Assert
         result.Should().BeTrue();
         sendEmailCallback.Should().Be(1);
-
-
     }
 
     [Fact]
     public async Task ThenSendNotificationCommandThrowsException()
     {
         //Arrange
-        var dict = new Dictionary<string, string>();
-        dict.Add("Key1", "Value1");
-        dict.Add("Key2", "Value2");
+        var dict = new Dictionary<string, string>
+        {
+            {"Key1", "Value1"},
+            {"Key2", "Value2"}
+        };
 
         MessageDto messageDto = new MessageDto
         {
@@ -63,17 +62,15 @@ public class WhenUsingGovNotifyCommands : BaseCreateDbUnitTest
         };
         CreateNotificationCommand command = new CreateNotificationCommand(messageDto);
         var logger = new Mock<ILogger<CreateNotificationCommandHandler>>();
-        Mock<IConnectSender> mockConnectSender = new Mock<IConnectSender>();
-        Mock<IManageSender> mockManageSender = new Mock<IManageSender>();
+        Mock<IGovNotifySender> govNotifySender = new Mock<IGovNotifySender>();
         int sendEmailCallback = 0;
-        mockConnectSender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
+        govNotifySender.Setup(x => x.SendEmailAsync(It.IsAny<MessageDto>()))
             .Callback(() => sendEmailCallback++).Throws(new Exception());
 
-        CreateNotificationCommandHandler handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), GetMapper(), mockManageSender.Object, mockConnectSender.Object, logger.Object);
+        var handler = new CreateNotificationCommandHandler(GetApplicationDbContext(), govNotifySender.Object, GetMapper(), logger.Object);
 
         //Act
-        Func<Task> sutMethod = async () => { await handler.Handle(command, new System.Threading.CancellationToken()); };
-
+        Func<Task> sutMethod = async () => { await handler.Handle(command, new CancellationToken()); };
 
         //Assert
         await sutMethod.Should().ThrowAsync<Exception>();
