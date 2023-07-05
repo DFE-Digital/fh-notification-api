@@ -104,12 +104,17 @@ public class GovNotifySender : IGovNotifySender
         _notificationClients = notificationClients;
         _govNotifySettings = govNotifySettings;
         _logger = logger;
+
+        //todo: get all templates and cache, so that we can do error checking when sending later
     }
 
     public async Task SendEmailAsync(MessageDto messageDto)
     {
         var client = _notificationClients.FirstOrDefault(x => x.ApiKeyType == messageDto.ApiKeyType)
             ?? throw new InvalidOperationException($"Client for ApiKeyType {messageDto.ApiKeyType} not found");
+
+        //do at startup and cache
+        //await client.GetAllTemplatesAsync()
 
         var personalisation = messageDto.TemplateTokens
             .ToDictionary(pair => pair.Key, pair => (dynamic)pair.Value);

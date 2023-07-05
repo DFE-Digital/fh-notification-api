@@ -67,21 +67,21 @@ public static class StartupExtensions
     private static void RegisterAdditionalInterfaces(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IGovNotifySender, GovNotifySender>();
-        var connectNotifyAPIKey = configuration["GovNotifySetting:ConnectAPIKey"];
-        if (connectNotifyAPIKey == null)
+        string? connectNotifyApiKey = configuration["GovNotifySetting:ConnectAPIKey"];
+        if (connectNotifyApiKey == null)
         {
             //todo: use config exception
             throw new InvalidOperationException("Connect API Key is not configured");
         }
-        services.AddSingleton<IServiceNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ConnectKey, connectNotifyAPIKey));
+        services.AddSingleton<IServiceNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ConnectKey, connectNotifyApiKey));
         
         //services.AddTransient<IManageSender, ManageNotifySender>();
-        var manageNotifyAPIKey = configuration["GovNotifySetting:ManageAPIKey"];
-        if (manageNotifyAPIKey == null)
+        string? manageNotifyApiKey = configuration["GovNotifySetting:ManageAPIKey"];
+        if (manageNotifyApiKey == null)
         {
             throw new InvalidOperationException("Manage API Key is not configured");
         }
-        services.AddSingleton<IAsyncNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ManageKey, manageNotifyAPIKey));
+        services.AddSingleton<IAsyncNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ManageKey, manageNotifyApiKey));
     }
 
     private static void RegisterAutoMapper(this IServiceCollection services)

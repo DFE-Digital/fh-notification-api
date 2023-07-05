@@ -22,31 +22,27 @@ public class CreateNotificationCommand : IRequest<bool>, ICreateNotificationComm
 public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificationCommand, bool>
 {
     private readonly ApplicationDbContext _context;
+    private readonly IGovNotifySender _govNotifySender;
     private readonly IMapper _mapper;
-    private readonly IConnectSender _connectSender;
-    private readonly IManageSender _manageSender;
     private readonly ILogger<CreateNotificationCommandHandler> _logger;
 
     public CreateNotificationCommandHandler(
         ApplicationDbContext context,
+        IGovNotifySender govNotifySender,
         IMapper mapper,
-        IManageSender manageSender,
-        IConnectSender connectSender,
         ILogger<CreateNotificationCommandHandler> logger)
     {
         _context = context;
+        _govNotifySender = govNotifySender;
         _mapper = mapper;
-        _connectSender = connectSender;
-        _manageSender = manageSender;
         _logger = logger;
-
     }
+
     public async Task<bool> Handle(CreateNotificationCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            var sender = (INotifySender)(request.MessageDto.ApiKeyType == ApiKeyType.ManageKey ? _manageSender : _connectSender);
-            await sender.SendEmailAsync(request.MessageDto);
+            await _govNotifySender.SendEmailAsync(request.MessageDto);
 
             var sentNotification = _mapper.Map<SentNotification>(request.MessageDto);
             if (sentNotification != null) 
