@@ -7,97 +7,109 @@ using Notify.Interfaces;
 
 namespace FamilyHubs.Notification.Data.NotificationServices;
 
-public interface IConnectNotificationClient : IAsyncNotificationClient
+public interface IServiceNotificationClient : IAsyncNotificationClient
 {
-    
+    ApiKeyType ApiKeyType { get; }
 }
 
-public interface IManageNotificationClient : IAsyncNotificationClient
-{
-    
-}
+//public interface IConnectNotificationClient : IAsyncNotificationClient
+//{
+//}
 
-public class ConnectNotificationClient : NotificationClient, IConnectNotificationClient
+//public interface IManageNotificationClient : IAsyncNotificationClient
+//{
+//}
+
+public class ServiceNotificationClient : NotificationClient, IServiceNotificationClient
 {
-    public string Name { get => "Connect"; }
-    public ConnectNotificationClient(string apiKey)
+    public ApiKeyType ApiKeyType { get; private set; }
+
+    //todo: ConnectNotificationClient is transient, so we'll have a new HttpClient each time, but HttpClient should be a singleton
+    public ServiceNotificationClient(ApiKeyType apiKeyType, string apiKey)
             : base(new HttpClientWrapper(new HttpClient()), apiKey)
     {
+        ApiKeyType = apiKeyType;
     }
 
-    public ConnectNotificationClient(IHttpClient client, string apiKey)
-        : base(client, apiKey)
-    {
-    }
-
+    //public ServiceNotificationClient(IHttpClient client, string apiKey)
+    //    : base(client, apiKey)
+    //{
+    //}
 }
 
-public class ManageNotificationClient : NotificationClient, IManageNotificationClient
+//public class ManageNotificationClient : NotificationClient, IManageNotificationClient
+//{
+//    public string Name => "Manage";
+
+//    public ManageNotificationClient(string apiKey)
+//            : base(new HttpClientWrapper(new HttpClient()), apiKey)
+//    {
+//    }
+
+//    public ManageNotificationClient(IHttpClient client, string apiKey)
+//        : base(client, apiKey)
+//    {
+//    }
+
+//}
+
+//public class ConnectNotifySender : GovNotifySender, IConnectSender
+//{
+//    public ConnectNotifySender(
+//        IEnumerable<IAsyncNotificationClient> notificationClients,
+//        IOptions<GovNotifySetting> govNotifySettings,
+//        ILogger<ConnectNotifySender> logger)
+//        : base(notificationClients, govNotifySettings, logger)
+//    {
+//        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ConnectNotificationClient));
+//        if (NotificationClient == null)
+//        {
+//            throw new InvalidOperationException("Connect Notification Client not found");
+//        }
+//    }
+//}
+
+//public class ManageNotifySender : GovNotifySender, IManageSender
+//{
+//    public ManageNotifySender(
+//        IEnumerable<IAsyncNotificationClient> notificationClients,
+//        IOptions<GovNotifySetting> govNotifySettings,
+//        ILogger<ManageNotifySender> logger)
+//        : base(notificationClients, govNotifySettings, logger)
+//    {
+//        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ManageNotificationClient));
+//        if (NotificationClient == null)
+//        {
+//            throw new InvalidOperationException("Manage Notification Client not found");
+//        }
+//    }
+//}
+
+public interface IGovNotifySender
 {
-    public string Name { get => "Manage"; }
-    public ManageNotificationClient(string apiKey)
-            : base(new HttpClientWrapper(new HttpClient()), apiKey)
-    {
-    }
-
-    public ManageNotificationClient(IHttpClient client, string apiKey)
-        : base(client, apiKey)
-    {
-    }
-
+    Task SendEmailAsync(MessageDto messageDto);
 }
 
-public class ConnectNotifySender : GovNotifySender, IConnectSender
+public class GovNotifySender : IGovNotifySender
 {
-    public ConnectNotifySender(
-        IEnumerable<IAsyncNotificationClient> notificationClients,
-        IOptions<GovNotifySetting> govNotifySettings,
-        ILogger<ConnectNotifySender> logger)
-        : base(notificationClients, govNotifySettings, logger)
-    {
-        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ConnectNotificationClient));
-        if (NotificationClient == null)
-        {
-            throw new InvalidOperationException("Connect Notification Client not found");
-        }
-    }
-}
-
-public class ManageNotifySender : GovNotifySender, IManageSender
-{
-    public ManageNotifySender(
-        IEnumerable<IAsyncNotificationClient> notificationClients,
-        IOptions<GovNotifySetting> govNotifySettings,
-        ILogger<ManageNotifySender> logger)
-        : base(notificationClients, govNotifySettings, logger)
-    {
-        NotificationClient = notificationClients.FirstOrDefault(x => x.GetType() == typeof(ManageNotificationClient));
-        if (NotificationClient == null)
-        {
-            throw new InvalidOperationException("Manage Notification Client not found");
-        }
-    }
-}
-
-public class GovNotifySender
-{
+    private readonly IEnumerable<IServiceNotificationClient> _notificationClients;
     private readonly IOptions<GovNotifySetting> _govNotifySettings;
     private readonly ILogger _logger;
-    protected IAsyncNotificationClient? NotificationClient;
 
     public GovNotifySender(
-        IEnumerable<IAsyncNotificationClient> notificationClients,
+        IEnumerable<IServiceNotificationClient> notificationClients,
         IOptions<GovNotifySetting> govNotifySettings,
-        ILogger logger)
+        ILogger<GovNotifySender> logger)
     {
+        _notificationClients = notificationClients;
         _govNotifySettings = govNotifySettings;
         _logger = logger;
     }
 
     public async Task SendEmailAsync(MessageDto messageDto)
     {
-        if (NotificationClient == null)
-            return;
+        var client = _notificationClients.FirstOrDefault(x => x.ApiKeyType == messageDto.ApiKeyType)
+            ?? throw new InvalidOperationException($"Client for ApiKeyType {messageDto.ApiKeyType} not found");
 
         var personalisation = messageDto.TemplateTokens
             .ToDictionary(pair => pair.Key, pair => (dynamic)pair.Value);
@@ -109,7 +121,9 @@ public class GovNotifySender
             // make best effort to send notification to all recipients
             try
             {
-                await NotificationClient.SendEmailAsync(
+                //todo: fail if messageDto.TemplateId not found, rather than have fallback template
+                //todo: add dev only code to get templates from GovNotify and check exists. perhaps always do, as govuk silently ignores when template id doesn't exist
+                var result = await client.SendEmailAsync(
                     emailAddress: notification,
                     templateId: !string.IsNullOrEmpty(messageDto.TemplateId) ? messageDto.TemplateId : _govNotifySettings.Value.TemplateId,
                     personalisation: personalisation,

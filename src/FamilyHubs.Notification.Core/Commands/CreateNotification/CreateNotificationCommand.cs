@@ -27,7 +27,12 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
     private readonly IManageSender _manageSender;
     private readonly ILogger<CreateNotificationCommandHandler> _logger;
 
-    public CreateNotificationCommandHandler(ApplicationDbContext context, IMapper mapper, IManageSender manageSender, IConnectSender connectSender, ILogger<CreateNotificationCommandHandler> logger)
+    public CreateNotificationCommandHandler(
+        ApplicationDbContext context,
+        IMapper mapper,
+        IManageSender manageSender,
+        IConnectSender connectSender,
+        ILogger<CreateNotificationCommandHandler> logger)
     {
         _context = context;
         _mapper = mapper;
