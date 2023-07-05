@@ -17,10 +17,10 @@ public class WhenGettingSentNotifications : BaseCreateDbUnitTest
     [InlineData(NotificationOrderBy.Created, false, 2)]
     [InlineData(NotificationOrderBy.TemplateId, true, 1)]
     [InlineData(NotificationOrderBy.TemplateId, false, 2)]
-    public async Task ThenGetSentNotifications(NotificationOrderBy orderBy, bool isAssending, int firstId)
+    public async Task ThenGetSentNotifications(NotificationOrderBy orderBy, bool isAscending, int firstId)
     {
         //Arrange
-        GetNotificationsCommand command = new GetNotificationsCommand(null, orderBy, isAssending, 1, 10);
+        GetNotificationsCommand command = new GetNotificationsCommand(null, orderBy, isAscending, 1, 10);
         var context = GetApplicationDbContext();
         context.AddRange(GetNotificationList());
         context.SaveChanges();

@@ -33,30 +33,30 @@ public class GetHandlerBase
         return result;
     }
 
-    protected IQueryable<SentNotification> OrderBy(IQueryable<SentNotification> currentList, NotificationOrderBy? orderBy, bool? isAssending)
+    protected IQueryable<SentNotification> OrderBy(IQueryable<SentNotification> currentList, NotificationOrderBy? orderBy, bool? isAscending)
     {
-        if (orderBy == null || isAssending == null)
+        if (orderBy == null || isAscending == null)
             return currentList;
 
         switch (orderBy)
         {
             case NotificationOrderBy.RecipientEmail:
-                if (isAssending.Value)
+                if (isAscending.Value)
                     return currentList.OrderBy(x => x.Notified.Select(x => x.Value).FirstOrDefault());
                 return currentList.OrderByDescending(x => x.Notified.Select(x => x.Value).FirstOrDefault());
                 
             case NotificationOrderBy.Created:
-                if (isAssending.Value)
+                if (isAscending.Value)
                     return currentList.OrderBy(x => x.Created);
                 return currentList.OrderByDescending(x => x.Created);
 
             case NotificationOrderBy.TemplateId:
-                if (isAssending.Value)
+                if (isAscending.Value)
                     return currentList.OrderBy(x => x.TemplateId);
                 return currentList.OrderByDescending(x => x.TemplateId);
 
             case NotificationOrderBy.ApiKeyType:
-                if (isAssending.Value)
+                if (isAscending.Value)
                     return currentList.OrderBy(x => x.ApiKeyType);
                 return currentList.OrderByDescending(x => x.ApiKeyType);
 
