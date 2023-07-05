@@ -15,17 +15,12 @@ public class GovNotifySender : IGovNotifySender
     {
         _notificationClients = notificationClients;
         _logger = logger;
-
-        //todo: get all templates and cache, so that we can do error checking when sending later
     }
 
     public async Task SendEmailAsync(MessageDto messageDto)
     {
         var client = _notificationClients.FirstOrDefault(x => x.ApiKeyType == messageDto.ApiKeyType)
             ?? throw new InvalidOperationException($"Client for ApiKeyType {messageDto.ApiKeyType} not found");
-
-        //do at startup and cache
-        //await client.GetAllTemplatesAsync()
 
         var personalisation = messageDto.TemplateTokens
             .ToDictionary(pair => pair.Key, pair => (dynamic)pair.Value);
@@ -37,10 +32,7 @@ public class GovNotifySender : IGovNotifySender
             // make best effort to send notification to all recipients
             try
             {
-                //todo: fail if messageDto.TemplateId not found, rather than have fallback template
-                //todo: add dev only code to get templates from GovNotify and check exists. perhaps always do, as govuk silently ignores when template id doesn't exist
-                var result = await client.SendEmailAsync(
-                    emailAddress, messageDto.TemplateId, personalisation);
+                await client.SendEmailAsync(emailAddress, messageDto.TemplateId, personalisation);
             }
             catch (NotifyClientException e)
             {
@@ -49,4 +41,3 @@ public class GovNotifySender : IGovNotifySender
         }
     }
 }
-
