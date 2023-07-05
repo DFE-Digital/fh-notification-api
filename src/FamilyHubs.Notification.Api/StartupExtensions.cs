@@ -78,7 +78,6 @@ public static class StartupExtensions
         {
             services.AddTransient<IAsyncNotificationClient>(s => new ManageNotificationClient(manageNotifyAPIKey));
         }
-        
     }
 
     private static void RegisterAutoMapper(this IServiceCollection services)

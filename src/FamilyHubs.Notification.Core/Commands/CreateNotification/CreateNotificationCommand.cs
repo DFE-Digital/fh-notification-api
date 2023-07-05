@@ -41,7 +41,7 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
         try
         {
             var sender = (INotifySender)(request.MessageDto.ApiKeyType == ApiKeyType.ManageKey ? _manageSender : _connectSender);
-            await _manageSender.SendEmailAsync(request.MessageDto);
+            await sender.SendEmailAsync(request.MessageDto);
 
             var sentNotification = _mapper.Map<SentNotification>(request.MessageDto);
             if (sentNotification != null) 
