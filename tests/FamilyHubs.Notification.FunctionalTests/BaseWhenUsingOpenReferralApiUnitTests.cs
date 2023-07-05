@@ -29,7 +29,7 @@ public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
 
         _emailRecipient = config.GetValue<string>("EmailRecipient") ?? string.Empty;
 
-        string[] keys = new string[] { "ProfessionalAcceptRequest", "ProfessionalDecineRequest", "ProfessionalSentRequest", "VcsNewRequest" };
+        string[] keys = { "ProfessionalAcceptRequest", "ProfessionalDecineRequest", "ProfessionalSentRequest", "VcsNewRequest" };
 
         _templates = new Dictionary<string, string>();
         foreach(string templatekey in keys)
