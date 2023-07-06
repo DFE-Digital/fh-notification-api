@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 namespace FamilyHubs.Notification.Api.Client.Templates;
 
 public class NotificationTemplates<T> : INotificationTemplates<T>
-    where T : struct, Enum, IConvertible
+    where T : struct, Enum
 {
     private ImmutableDictionary<T, string> TemplateIds { get; }
 
