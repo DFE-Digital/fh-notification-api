@@ -21,6 +21,7 @@ public class NotificationsApi : INotifications //todo: , IHealthCheckUrlGroup
         IEnumerable<string> emailAddresses,
         string templateId,
         IDictionary<string, string> tokens,
+        ApiKeyType apiKeyType = ApiKeyType.ConnectKey,
         CancellationToken cancellationToken = default)
     {
         var httpClient = _httpClientFactory.CreateClient(HttpClientName);
@@ -30,7 +31,7 @@ public class NotificationsApi : INotifications //todo: , IHealthCheckUrlGroup
 
         var message = new MessageDto
         {
-            ApiKeyType = ApiKeyType.ConnectKey,
+            ApiKeyType = apiKeyType,
             NotificationEmails = emailAddresses as List<string> ?? emailAddresses.ToList(),
             TemplateId = templateId,
             TemplateTokens = tokenDic
