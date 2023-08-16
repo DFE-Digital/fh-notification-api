@@ -81,7 +81,7 @@ public static class StartupExtensions
         {
             throw new InvalidOperationException("Manage API Key is not configured");
         }
-        services.AddSingleton<IAsyncNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ManageKey, manageNotifyApiKey));
+        services.AddSingleton<IServiceNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ManageKey, manageNotifyApiKey));
     }
 
     private static void RegisterAutoMapper(this IServiceCollection services)
