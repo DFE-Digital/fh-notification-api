@@ -28,7 +28,7 @@ public class MinimalNotifyEndPoints
 
         }).WithMetadata(new SwaggerOperationAttribute("Get Notifications", "Get Paginated Notification List") { Tags = new[] { "Notifications" } });
 
-        app.MapGet("api/notify/{id}", async (long id, CancellationToken cancellationToken, ISender _mediator) =>
+        app.MapGet("api/notify/{id}", [Authorize] async (long id, CancellationToken cancellationToken, ISender _mediator) =>
         {
             GetNotificationByIdCommand request = new(id);
             var result = await _mediator.Send(request, cancellationToken);
