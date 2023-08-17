@@ -65,6 +65,27 @@ public class WhenGettingSentNotifications : BaseCreateDbUnitTest
         result.Items[0].Created.Should().NotBeNull();
     }
 
+    [Fact]
+    public async Task ThenGetSentNotificationById()
+    {
+        //Arrange
+        var expected = GetMapper().Map<MessageDto>(GetNotificationList().First(x => x.Id == 1));
+        var context = GetApplicationDbContext();
+        context.AddRange(GetNotificationList());
+        context.SaveChanges();
+
+        GetNotificationByIdCommand command = new(1);
+        GetNotificationByIdCommandHandler handler = new(context, GetMapper());
+
+        //Act
+        var result = await handler.Handle(command, new System.Threading.CancellationToken());
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expected, options => options.Excluding(x => x.Created));
+        
+    }
+
     private List<SentNotification> GetNotificationList()
     {
         return new List<SentNotification>

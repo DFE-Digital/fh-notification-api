@@ -75,7 +75,6 @@ public static class StartupExtensions
         }
         services.AddSingleton<IServiceNotificationClient>(s => new ServiceNotificationClient(ApiKeyType.ConnectKey, connectNotifyApiKey));
         
-        //services.AddTransient<IManageSender, ManageNotifySender>();
         string? manageNotifyApiKey = configuration["GovNotifySetting:ManageAPIKey"];
         if (manageNotifyApiKey == null)
         {

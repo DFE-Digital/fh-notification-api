@@ -1,8 +1,8 @@
 ﻿using FamilyHubs.Notification.Api.Contracts;
 using FluentAssertions;
-using System.Diagnostics.CodeAnalysis;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Text.Json;
 using Xunit.Abstractions;
 
 namespace FamilyHubs.Notification.FunctionalTests;
@@ -40,8 +40,15 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
     //[InlineData("VcsNewRequest")]
     public async Task ThenSendEmailNotificationToUser(string key)
     {
+        if (!IsRunningLocally() || Client == null)
+        {
+            // Skip the test if not running locally
+            Assert.True(true, "Test skipped because it is not running locally.");
+            return;
+        }
+
         Console.SetOut(new ConsoleWriter(output));
-        if (!_templates.ContainsKey(key))
+        if (!_templates!.ContainsKey(key))
         {
             return;
         }
@@ -49,7 +56,7 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
         var command = new MessageDto
         {
             ApiKeyType = ApiKeyType.ConnectKey,
-            NotificationEmails = new List<string> { _emailRecipient },
+            NotificationEmails = new List<string> { _emailRecipient! },
             TemplateId = _templates[key],
             TemplateTokens = new Dictionary<string, string>
             {
@@ -81,5 +88,39 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
 
         response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
         result.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task ThenGetNotificationById()
+    {
+        if (!IsRunningLocally() || Client == null)
+        {
+            // Skip the test if not running locally
+            Assert.True(true, "Test skipped because it is not running locally.");
+            return;
+        }
+
+        SeedDatabase();
+
+        var expected = GetMapper().Map<MessageDto>(GetNotificationList().First(x => x.Id == 1));
+
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(Client!.BaseAddress + $"api/notify/1"),
+        };
+
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue($"Bearer", $"{new JwtSecurityTokenHandler().WriteToken(_token)}");
+
+        using var response = await Client.SendAsync(request);
+
+        response.EnsureSuccessStatusCode();
+
+        var retVal = await JsonSerializer.DeserializeAsync<MessageDto>(await response.Content.ReadAsStreamAsync(), options: new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        retVal.Should().NotBeNull();
+        retVal.Should().BeEquivalentTo(expected, options => options.Excluding(x => x.Created));
+
     }
 }
