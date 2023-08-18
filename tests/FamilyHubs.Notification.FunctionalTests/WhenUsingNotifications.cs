@@ -91,6 +91,40 @@ public class WhenUsingNotifications : BaseWhenUsingOpenReferralApiUnitTests
     }
 
     [Fact]
+    public async Task ThenGetNotificationsList()
+    {
+        if (!IsRunningLocally() || Client == null)
+        {
+            // Skip the test if not running locally
+            Assert.True(true, "Test skipped because it is not running locally.");
+            return;
+        }
+
+        SeedDatabase();
+
+        var expected = new PaginatedList<MessageDto>(GetMapper().Map<List<MessageDto>>(GetNotificationList()),2,1,10);
+
+        var request = new HttpRequestMessage
+        {
+            Method = HttpMethod.Get,
+            RequestUri = new Uri(Client!.BaseAddress + $"api/notify"),
+        };
+
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue($"Bearer", $"{new JwtSecurityTokenHandler().WriteToken(_token)}");
+
+        using var response = await Client.SendAsync(request);
+
+        response.EnsureSuccessStatusCode();
+
+        var retVal = await JsonSerializer.DeserializeAsync<PaginatedList<MessageDto>>(await response.Content.ReadAsStreamAsync(), options: new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+        response.StatusCode.Should().Be(System.Net.HttpStatusCode.OK);
+        retVal.Should().NotBeNull();
+        retVal.Should().BeEquivalentTo(expected);
+
+    }
+
+    [Fact]
     public async Task ThenGetNotificationById()
     {
         if (!IsRunningLocally() || Client == null)
