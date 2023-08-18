@@ -30,10 +30,4 @@
     <ProjectReference Include="..\..\src\FamilyHubs.Notification.Api\FamilyHubs.Notification.Api.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="appsettings.test.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

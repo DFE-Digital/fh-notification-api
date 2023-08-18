@@ -45,7 +45,7 @@ public class AutoMappingProfiles : Profile
         return tokenValues;
     }
 
-    private Dictionary<string,string> CreateTokenDictionary(IList<TokenValue> tokenValues)
+    private static Dictionary<string,string> CreateTokenDictionary(IList<TokenValue> tokenValues)
     {
         Dictionary<string, string> keyValuePairs = new Dictionary<string, string>();
         foreach (var  token in tokenValues)

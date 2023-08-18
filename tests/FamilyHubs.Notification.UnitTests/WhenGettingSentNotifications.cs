@@ -1,7 +1,10 @@
-﻿using FamilyHubs.Notification.Api.Contracts;
+﻿using Ardalis.GuardClauses;
+using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Core.Queries.GetSentNotifications;
 using FamilyHubs.Notification.Data.Entities;
+using FamilyHubs.Notification.Data.Repository;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace FamilyHubs.Notification.UnitTests;
 
@@ -21,7 +24,7 @@ public class WhenGettingSentNotifications : BaseCreateDbUnitTest
     {
         //Arrange
         GetNotificationsCommand command = new GetNotificationsCommand(null, orderBy, isAscending, 1, 10);
-        var context = GetApplicationDbContext();
+        using var context = GetApplicationDbContext();
         context.AddRange(GetNotificationList());
         context.SaveChanges();
 
@@ -46,7 +49,7 @@ public class WhenGettingSentNotifications : BaseCreateDbUnitTest
     public async Task ThenGetSentNotificationsByApiKeyType(ApiKeyType? apiKeyType)
     {
         GetNotificationsCommand command = new GetNotificationsCommand(apiKeyType, null, false, 1, 10);
-        var context = GetApplicationDbContext();
+        using var context = GetApplicationDbContext();
         context.AddRange(GetNotificationList());
         context.SaveChanges();
 
@@ -63,6 +66,42 @@ public class WhenGettingSentNotifications : BaseCreateDbUnitTest
         else
             result.Items.Count.Should().Be(2);
         result.Items[0].Created.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task ThenGetSentNotificationById()
+    {
+        //Arrange
+        var expected = GetMapper().Map<MessageDto>(GetNotificationList().First(x => x.Id == 1));
+        using var context = GetApplicationDbContext();
+        context.AddRange(GetNotificationList());
+        context.SaveChanges();
+
+        GetNotificationByIdCommand command = new(1);
+        GetNotificationByIdCommandHandler handler = new(context, GetMapper());
+
+        //Act
+        var result = await handler.Handle(command, new System.Threading.CancellationToken());
+
+        //Assert
+        result.Should().NotBeNull();
+        result.Should().BeEquivalentTo(expected, options => options.Excluding(x => x.Created));
+        
+    }
+
+    [Fact]
+    public async Task ThenGetSentNotificationById_ReturnsNotFoundException()
+    {
+        //Arrange
+        using var context = GetApplicationDbContext();
+        GetNotificationByIdCommand command = new(1);
+        GetNotificationByIdCommandHandler handler = new(context, GetMapper());
+
+        //Act
+        Func<Task> act = async () => await handler.Handle(command, CancellationToken.None);
+
+        //Assert
+        await act.Should().ThrowAsync<NotFoundException>();
     }
 
     private List<SentNotification> GetNotificationList()
