@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FamilyHubs.Notification.Api;
 using FamilyHubs.Notification.Api.Contracts;
 using FamilyHubs.Notification.Core;
 using FamilyHubs.Notification.Data.Entities;
@@ -31,7 +32,7 @@ public abstract class BaseWhenUsingOpenReferralApiUnitTests : IDisposable
         try
         {
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.test.json")
+                .AddUserSecrets<Program>()
                  .AddEnvironmentVariables()
                  .Build();
 
