@@ -3,9 +3,11 @@ using AutoMapper.EquivalencyExpression;
 using FamilyHubs.Notification.Core;
 using FamilyHubs.Notification.Data.Interceptors;
 using FamilyHubs.Notification.Data.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 
 namespace FamilyHubs.Notification.IntegrationTests;
 
@@ -30,7 +32,8 @@ public class DataIntegrationTestBase
     {
         var serviceDirectoryConnection = $"Data Source=sd-{Random.Shared.Next().ToString()}.db;Mode=ReadWriteCreate;Cache=Shared;Foreign Keys=True;Recursive Triggers=True;Default Timeout=30;Pooling=True";
 
-        var auditableEntitySaveChangesInterceptor = new AuditableEntitySaveChangesInterceptor();
+        var mockIHttpContextAccessor = Mock.Of<IHttpContextAccessor>();
+        var auditableEntitySaveChangesInterceptor = new AuditableEntitySaveChangesInterceptor(mockIHttpContextAccessor);
 
         return new ServiceCollection().AddEntityFrameworkSqlite()
             .AddDbContext<ApplicationDbContext>(dbContextOptionsBuilder =>

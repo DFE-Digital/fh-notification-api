@@ -2,8 +2,11 @@
 using FamilyHubs.Notification.Core;
 using FamilyHubs.Notification.Data.Interceptors;
 using FamilyHubs.Notification.Data.Repository;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using System.Security.Claims;
 
 namespace FamilyHubs.Notification.UnitTests;
 
@@ -15,7 +18,23 @@ public class BaseCreateDbUnitTest
     protected static ApplicationDbContext GetApplicationDbContext()
     {
         var options = CreateNewContextOptions();
-        var auditableEntitySaveChangesInterceptor = new AuditableEntitySaveChangesInterceptor();
+        var mockIHttpContextAccessor = new Mock<IHttpContextAccessor>();
+        var context = new DefaultHttpContext();
+
+        context.User = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+        {
+            new Claim(ClaimTypes.Name, "John Doe"),
+            new Claim("OrganisationId", "1"),
+            new Claim("AccountId", "2"),
+            new Claim("AccountStatus", "Active"),
+            new Claim("Name", "John Doe"),
+            new Claim("ClaimsValidTillTime", "2023-09-11T12:00:00Z"),
+            new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress", "john@example.com"),
+            new Claim("PhoneNumber", "123456789")
+        }, "test"));
+
+        mockIHttpContextAccessor.Setup(h => h.HttpContext).Returns(context);
+        var auditableEntitySaveChangesInterceptor = new AuditableEntitySaveChangesInterceptor(mockIHttpContextAccessor.Object);
         var mockApplicationDbContext = new ApplicationDbContext(options, auditableEntitySaveChangesInterceptor);
 
         return mockApplicationDbContext;
