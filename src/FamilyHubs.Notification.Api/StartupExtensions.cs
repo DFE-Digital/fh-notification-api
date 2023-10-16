@@ -19,6 +19,9 @@ using FamilyHubs.Notification.Core.Commands.CreateNotification;
 using FamilyHubs.Notification.Data.NotificationServices;
 using Notify.Client;
 using Notify.Interfaces;
+using Quartz.Impl;
+using Quartz;
+using FamilyHubs.Notification.Api.Schedule;
 
 namespace FamilyHubs.Notification.Api;
 
@@ -205,6 +208,37 @@ public static class StartupExtensions
         catch (Exception ex)
         {
             Log.Error(ex, "An error occurred seeding the DB. {exceptionMessage}", ex.Message);
+        }
+    }
+
+    public static void RegisterQuartzSchedulere(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? healthCheckCron = configuration.GetValue<string>("HealthCheckCron");
+
+        if (!string.IsNullOrEmpty(healthCheckCron))
+        {
+            services.AddTransient<HealthCheckJob>();
+
+            services.AddQuartz(q =>
+            {
+                // Create a "key" for the job
+                var jobKey = new JobKey("HealthCheckJob");
+
+                // Register the job with the DI container
+                q.AddJob<HealthCheckJob>(opts => opts.WithIdentity(jobKey));
+
+                // Create a trigger for the job
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey) // link to the HelloWorldJob
+                    .WithIdentity("HealthCheckJob-trigger") // give the trigger a unique name
+                                                            //.WithCronSchedule("0/15 * * * * ?")); // run every 5 seconds
+                    .WithCronSchedule(healthCheckCron));
+            });
+
+            // Add the Quartz.NET hosted service
+
+            services.AddQuartzHostedService(
+                q => q.WaitForJobsToComplete = true);
         }
     }
 }

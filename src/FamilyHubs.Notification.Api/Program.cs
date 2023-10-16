@@ -26,6 +26,8 @@ public class Program
 
             builder.Services.ConfigureServices(builder.Configuration, builder.Environment.IsProduction());
 
+            builder.Services.RegisterQuartzSchedulere(builder.Configuration);
+
             var webApplication = builder.Build();
 
             await webApplication.ConfigureWebApplication();
