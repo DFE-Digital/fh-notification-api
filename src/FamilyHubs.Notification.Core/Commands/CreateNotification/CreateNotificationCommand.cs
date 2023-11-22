@@ -42,6 +42,10 @@ public class CreateNotificationCommandHandler : IRequestHandler<CreateNotificati
     {
         try
         {
+            string dictValues = "{" + string.Join(",", request.MessageDto.TemplateTokens.Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}";
+
+            _logger.LogInformation($"Sending Notification ApiKeyType:{request.MessageDto.ApiKeyType.ToString()} TemplateId: {request.MessageDto.TemplateId} - Tokens: {dictValues}");
+
             await _govNotifySender.SendEmailAsync(request.MessageDto);
 
             var sentNotification = _mapper.Map<SentNotification>(request.MessageDto);

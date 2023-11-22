@@ -1,20 +1,24 @@
-﻿using System.Net.Http.Json;
+﻿using System.Collections.Generic;
+using System.Net.Http.Json;
 using FamilyHubs.Notification.Api.Client.Exceptions;
 using FamilyHubs.Notification.Api.Contracts;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace FamilyHubs.Notification.Api.Client;
 
 #pragma warning disable S125
 public class NotificationsApi : INotifications //todo: , IHealthCheckUrlGroup
 {
+    private readonly ILogger<NotificationsApi> _logger;
     private readonly IHttpClientFactory _httpClientFactory;
     private static string? _endpoint;
     internal const string HttpClientName = "notifications";
 
-    public NotificationsApi(IHttpClientFactory httpClientFactory)
+    public NotificationsApi(IHttpClientFactory httpClientFactory, ILogger<NotificationsApi> logger)
     {
         _httpClientFactory = httpClientFactory;
+        _logger = logger;
     }
 
     public async Task SendEmailsAsync(
@@ -37,10 +41,15 @@ public class NotificationsApi : INotifications //todo: , IHealthCheckUrlGroup
             TemplateTokens = tokenDic
         };
 
+        string dictValues = "{" + string.Join(",", tokenDic.Select(kv => kv.Key + "=" + kv.Value).ToArray()) + "}";
+
+        _logger.LogInformation($"Sending Notification ApiKeyType:{message.ApiKeyType.ToString()} TemplateId: {message} - Tokens: {dictValues}");
+
         using var response = await httpClient.PostAsJsonAsync("", message, cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
+            _logger.LogError("Email Notification Failed");
             throw new NotificationsClientException(response, await response.Content.ReadAsStringAsync(cancellationToken));
         }
     }
