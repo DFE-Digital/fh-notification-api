@@ -27,7 +27,7 @@ public class GovNotifySender : IGovNotifySender
 
         foreach(var emailAddress in messageDto.NotificationEmails) 
         {
-            _logger.LogInformation("Sending email to: {EmailAddress}", emailAddress);
+            _logger.LogInformation("Sending email");
 
             // make best effort to send notification to all recipients
             try
